@@ -1,5 +1,17 @@
 import yfinance as yf
 import pandas as pd
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+DATA_DIR = PROJECT_ROOT / 'data'
+
+
+def get_data_path(filename: str) -> Path:
+    """
+    Returns an absolute path inside the data/ folder and ensures the folder exists.
+    """
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    return DATA_DIR / filename
 
 def download_stock_data(tickers: list, start_date: str, end_date: str) -> pd.DataFrame:
     """
