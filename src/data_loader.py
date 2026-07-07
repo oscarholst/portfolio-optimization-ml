@@ -3,73 +3,73 @@ import pandas as pd
 
 def download_stock_data(tickers: list, start_date: str, end_date: str) -> pd.DataFrame:
     """
-    Laddar ner historiska justerade stängningskurser med felhantering.
+    Downloads historical adjusted closing prices with error handling.
     """
-    print(f"Hämtar data för {len(tickers)} tillgångar från Yahoo Finance...")
+    print(f"Fetching data for {len(tickers)} assets from Yahoo Finance...")
     
-    # Ladda ner data
+    # Download data
     data = yf.download(tickers, start=start_date, end=end_date)
     
-    # 1. Kontrollera om datan är helt tom (Nätverksfel / API-timeout)
+    # 1. Check whether the dataset is completely empty (network error / API timeout)
     if data.empty:
-        print("\n FEL: Ingen data returnerades från Yahoo Finance.")
-        print("Detta beror oftast på en tillfällig nätverksstörning eller API-blockering.")
-        print("Kontrollera din internetanslutning och testa att köra cellen igen om en kort stund.\n")
+        print("\nERROR: No data was returned from Yahoo Finance.")
+        print("This is usually caused by a temporary network issue or API blocking.")
+        print("Check your internet connection and try running the cell again in a moment.\n")
         return pd.DataFrame()
         
-    # 2. Hämta 'Adj Close' säkert (hanterar både platt index och MultiIndex)
+    # 2. Retrieve 'Adj Close' safely (handles both flat index and MultiIndex)
     try:
         if isinstance(data.columns, pd.MultiIndex):
             adj_close = data.xs('Adj Close', axis=1, level=0)
         else:
             adj_close = data['Adj Close']
     except KeyError:
-        # Fallback om Yahoo bara skickade med vanlig 'Close'
+        # Fallback if Yahoo only returned regular 'Close'
         if 'Close' in data.columns:
-            print(" Varning: 'Adj Close' saknas, använder 'Close' istället.")
+            print("Warning: 'Adj Close' is missing, using 'Close' instead.")
             if isinstance(data.columns, pd.MultiIndex):
                 adj_close = data.xs('Close', axis=1, level=0)
             else:
                 adj_close = data['Close']
         else:
-            print(f" Fel: Hittade varken 'Adj Close' eller 'Close'. Tillgängliga kolumner: {data.columns}")
-            raise KeyError("Kunde inte extrahera prishistorik.")
+            print(f"Error: Found neither 'Adj Close' nor 'Close'. Available columns: {data.columns}")
+            raise KeyError("Could not extract price history.")
             
     return adj_close.dropna(how='all')
 
 
 def download_macro_and_market_data(start_date: str, end_date: str) -> pd.DataFrame:
     """
-    Laddar ner global makro-, valuta-, råvaru- och indexdata från Yahoo Finance.
+    Downloads global macro, currency, commodity, and index data from Yahoo Finance.
     """
-    print("Hämtar global marknads- och makrodata (VIX, Räntor, Valutor, Råvaror, Index)...")
+    print("Fetching global market and macro data (VIX, rates, currencies, commodities, indices)...")
     
-    # Ordbok med tickers och vad vi vill döpa om dem till
+    # Dictionary with tickers and the names we want to assign to them
     ticker_dict = {
-        '^VIX': 'VIX',          # Marknadsrisk/Volatilitet
-        '^TNX': 'US10Y',        # Amerikansk 10-årig ränta
-        'USDSEK=X': 'USDSEK',   # Valuta USD/SEK
-        'EURSEK=X': 'EURSEK',   # Valuta EUR/SEK
-        'HG=F': 'Copper',       # Kopparpris (Industriproxy)
-        'BZ=F': 'Brent_Oil',    # Oljepris (Inflationsproxy)
-        '^GSPC': 'SP500',       # Amerikanska marknaden
-        '^OMX': 'OMXS30_Index'  # Svenska marknaden
+        '^VIX': 'VIX',          # Market risk / volatility
+        '^TNX': 'US10Y',        # U.S. 10-year rate
+        'USDSEK=X': 'USDSEK',   # USD/SEK exchange rate
+        'EURSEK=X': 'EURSEK',   # EUR/SEK exchange rate
+        'HG=F': 'Copper',       # Copper price (industrial proxy)
+        'BZ=F': 'Brent_Oil',    # Oil price (inflation proxy)
+        '^GSPC': 'SP500',       # U.S. market
+        '^OMX': 'OMXS30_Index'  # Swedish market
     }
     
-    # Ladda ner data
+    # Download data
     data = yf.download(list(ticker_dict.keys()), start=start_date, end=end_date)
     
     if data.empty:
-        print(" Fel: Kunde inte hämta marknadsdata.")
+        print("Error: Could not fetch market data.")
         return pd.DataFrame()
         
-    # Extrahera stängningskurser säkert
+    # Extract closing prices safely
     if isinstance(data.columns, pd.MultiIndex):
         df = data.xs('Close', axis=1, level=0)
     else:
         df = data['Close']
         
-    # Döp om kolumnerna till rena, begripliga namn
+    # Rename columns to clean, readable names
     df = df.rename(columns=ticker_dict)
     
     return df.dropna(how='all')
