@@ -21,7 +21,7 @@ The framework uses specific validation methods to ensure the backtest operates r
 
 * TimeSeriesSplit: The model is trained strictly on historical data and tested on a rolling, chronological basis to mimic live trading.
 * Fold-Local Scaling: Feature scaling is applied strictly within each training fold, ensuring no future information contaminates the model during preprocessing.
-* Noise Test Control: A separate control test replaces all model predictions with random noise. The resulting Alpha collapsed to 4.92%, confirming that the backtest structure is sound and the actual model's 20.24% Alpha is driven by real predictive signals.
+* Noise Test Control: A separate control test replaces all model predictions with random noise. The resulting Alpha decreased to 4.92%, confirming that the backtest structure is sound.
 
 ## Project Structure
 
@@ -29,4 +29,4 @@ The framework uses specific validation methods to ensure the backtest operates r
 * `notebooks/02_portfolio_optimization.ipynb`: Monthly top 10 stock selection and portfolio simulation.
 * `notebooks/03_look_ahead_tests.ipynb`: Look-ahead bias stress tests (Noise Test).
 * `requirements.txt`: Environment dependencies.
-* `presentation.pdf`: Project summary slide deck.
+* `Portfolio_Optimization.pdf`: Project summary slide deck.
